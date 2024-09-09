@@ -1,3 +1,4 @@
+use std::fmt::Display;
 /// Module that updates the readme me with timing information.
 /// The approach taken is similar to how `aoc-readme-stars` handles this.
 use std::{fs, io};
@@ -11,6 +12,15 @@ static MARKER: &str = "<!--- benchmarking table --->";
 pub enum Error {
     Parser(String),
     IO(io::Error),
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Parser(s) => writeln!(f, "Parser error: {s}"),
+            Error::IO(e) => writeln!(f, "IO Error {e}"),
+        }
+    }
 }
 
 impl From<std::io::Error> for Error {
