@@ -12,6 +12,36 @@ pub struct Pt<T> {
     pub y: T,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Dir {
+    N,
+    S,
+    E,
+    W,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Dir2 {
+    U,
+    D,
+    L,
+    R,
+}
+
+impl FromStr for Dir2 {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "U" => Ok(Self::U),
+            "D" => Ok(Self::D),
+            "L" => Ok(Self::L),
+            "R" => Ok(Self::R),
+            _ => Err(anyhow!("{s} is not a valid Dir2")),
+        }
+    }
+}
+
 impl<T> Add<Pt<T>> for Pt<T>
 where
     T: Add<Output = T>,
@@ -23,6 +53,14 @@ where
             x: self.x + rhs.x,
             y: self.y + rhs.y,
         }
+    }
+}
+
+pub const ORIGINI32: Pt<i32> = Pt { x: 0, y: 0 };
+
+impl Pt<i32> {
+    pub fn manhattan_distance(&self, other: &Pt<i32>) -> u32 {
+        self.x.abs_diff(other.x) + self.y.abs_diff(other.y)
     }
 }
 
