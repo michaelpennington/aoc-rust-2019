@@ -18,7 +18,7 @@ struct PathWithSteps {
 }
 
 impl Path {
-    fn intersections<'a>(&'a self, other: &'a Path) -> impl Iterator<Item = &Pt<i32>> + '_ {
+    fn intersections<'a>(&'a self, other: &'a Path) -> impl Iterator<Item = &'a Pt<i32>> + 'a {
         self.map
             .iter()
             .filter(move |&p| *p != Pt { x: 0, y: 0 } && other.map.contains(p))
@@ -73,7 +73,7 @@ impl FromStr for PathWithSteps {
 }
 
 impl PathWithSteps {
-    fn intersections<'a>(&'a self, other: &'a PathWithSteps) -> impl Iterator<Item = u32> + '_ {
+    fn intersections<'a>(&'a self, other: &'a PathWithSteps) -> impl Iterator<Item = u32> + 'a {
         self.map
             .iter()
             .filter_map(move |(p1, s1)| other.map.get(p1).map(|s2| s1 + s2))
