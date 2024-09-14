@@ -29,13 +29,10 @@ impl OrderedMap {
         stroids.sort_by(|&pt1, &pt2| {
             let p1n = pt1.normalize();
             let p2n = pt2.normalize();
-            (p1n.x * p2n.y)
-                .cmp(&(p1n.y * p2n.x))
-                .reverse()
-                .then_with(|| {
-                    pt1.manhattan_distance(&ORIGINI32)
-                        .cmp(&pt2.manhattan_distance(&ORIGINI32))
-                })
+            (p2n.x * p1n.y).cmp(&(p2n.y * p1n.x)).then_with(|| {
+                pt1.manhattan_distance(&ORIGINI32)
+                    .cmp(&pt2.manhattan_distance(&ORIGINI32))
+            })
         });
         let best = stroids.iter().position(|p| p.y < 0 && p.x == 0).unwrap();
         stroids.rotate_left(best);
