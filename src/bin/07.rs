@@ -3,15 +3,17 @@ use itertools::Itertools;
 
 advent_of_code::solution!(7);
 
-fn test_permutation(perm: &[i32], comp: &Program) -> i32 {
+fn test_permutation(perm: &[i64], comp: &Program<i64>) -> i64 {
     let mut input = 0;
     for &num in perm.iter().take(5) {
-        input = comp.clone().execute_with_input([num, input]);
+        let mut comp = comp.clone();
+        comp.input([num, input]);
+        input = comp.next().unwrap();
     }
     input
 }
 
-fn test_permutation_looping(perm: &[i32], comp: &Program) -> i32 {
+fn test_permutation_looping(perm: &[i64], comp: &Program<i64>) -> i64 {
     let mut comps = [
         comp.clone(),
         comp.clone(),
@@ -19,34 +21,33 @@ fn test_permutation_looping(perm: &[i32], comp: &Program) -> i32 {
         comp.clone(),
         comp.clone(),
     ];
-    let mut perms = [
-        vec![perm[0], 0],
-        vec![perm[1]],
-        vec![perm[2]],
-        vec![perm[3]],
-        vec![perm[4]],
-    ];
+    comps[0].input([perm[0], 0]);
+    comps[1].input([perm[1]]);
+    comps[2].input([perm[2]]);
+    comps[3].input([perm[3]]);
+    comps[4].input([perm[4]]);
+    let mut last_seen = [0; 5];
+
     for i in 0.. {
         let i = i % 5;
-        match comps[i].execute_with_input_to_vec(perms[i].drain(..)) {
-            (None, Some(out)) => {
+
+        match comps[i].next() {
+            Some(v) => {
+                comps[(i + 1) % 5].input([v]);
+                last_seen[i] = v;
+            }
+            None => {
                 if i == 4 {
-                    return out;
-                } else {
-                    perms[i + 1].push(out);
+                    return last_seen[4];
                 }
             }
-            (Some(v), None) => {
-                perms[(i + 1) % 5].extend(v);
-            }
-            _ => unreachable!(),
         }
     }
     0
 }
 
-pub fn part_one(input: &str) -> Option<i32> {
-    let comp = input.parse::<Program>().unwrap();
+pub fn part_one(input: &str) -> Option<i64> {
+    let comp = input.parse::<Program<i64>>().unwrap();
     [0, 1, 2, 3, 4]
         .into_iter()
         .permutations(5)
@@ -54,8 +55,8 @@ pub fn part_one(input: &str) -> Option<i32> {
         .max()
 }
 
-pub fn part_two(input: &str) -> Option<i32> {
-    let comp = input.parse::<Program>().unwrap();
+pub fn part_two(input: &str) -> Option<i64> {
+    let comp = input.parse::<Program<i64>>().unwrap();
     [5, 6, 7, 8, 9]
         .into_iter()
         .permutations(5)

@@ -1,4 +1,4 @@
-use std::ops::{Div, DivAssign, Mul, MulAssign, RemAssign};
+use num_traits::{FromPrimitive, NumAssign, PrimInt};
 
 pub struct DigitsIter<T> {
     n: T,
@@ -7,13 +7,12 @@ pub struct DigitsIter<T> {
 
 impl<T> DigitsIter<T>
 where
-    T: TryFrom<usize> + MulAssign + Mul<Output = T> + PartialOrd + Clone + Copy,
-    <T as TryFrom<usize>>::Error: std::fmt::Debug,
+    T: PrimInt + FromPrimitive + NumAssign,
 {
     pub fn new(n: T) -> Self {
-        let ten = 10.try_into().unwrap();
-        let mut divisor = 1.try_into().unwrap();
-        while n >= divisor * 10.try_into().unwrap() {
+        let ten = T::from_u64(10).unwrap();
+        let mut divisor = T::one();
+        while n >= divisor * ten {
             divisor *= ten;
         }
 
@@ -23,18 +22,17 @@ where
 
 impl<T> Iterator for DigitsIter<T>
 where
-    T: TryFrom<usize> + RemAssign + DivAssign + Div<Output = T> + PartialEq + Clone + Copy,
-    <T as TryFrom<usize>>::Error: std::fmt::Debug,
+    T: PrimInt + NumAssign + FromPrimitive,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.divisor == 0.try_into().unwrap() {
+        if self.divisor == T::zero() {
             None
         } else {
             let v = Some(self.n / self.divisor);
             self.n %= self.divisor;
-            self.divisor /= 10.try_into().unwrap();
+            self.divisor /= T::from_u64(10).unwrap();
             v
         }
     }
