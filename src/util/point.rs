@@ -5,6 +5,9 @@ use std::{
 };
 
 use anyhow::anyhow;
+use num_traits::{Euclid, Num};
+
+use super::euclid::gcd;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct Pt<T> {
@@ -26,6 +29,15 @@ pub enum Dir2 {
     D,
     L,
     R,
+}
+
+impl<T> Display for Pt<T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
 }
 
 impl FromStr for Dir2 {
@@ -56,7 +68,34 @@ where
     }
 }
 
+impl<T> Sub<Pt<T>> for Pt<T>
+where
+    T: Sub<Output = T>,
+{
+    type Output = Pt<T>;
+
+    fn sub(self, rhs: Pt<T>) -> Self::Output {
+        Pt {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
 pub const ORIGINI32: Pt<i32> = Pt { x: 0, y: 0 };
+
+impl<T> Pt<T>
+where
+    T: Copy + Num + Euclid + Ord,
+{
+    pub fn normalize(self) -> Self {
+        let gcd = gcd(self.x, self.y);
+        Self {
+            x: self.x / gcd,
+            y: self.y / gcd,
+        }
+    }
+}
 
 impl Pt<i32> {
     pub fn manhattan_distance(&self, other: &Pt<i32>) -> u32 {
