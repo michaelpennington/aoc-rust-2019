@@ -1,5 +1,6 @@
 use std::{
     fmt::Display,
+    iter::Sum,
     ops::{Add, AddAssign, Div, Mul, MulAssign, Sub},
     str::FromStr,
 };
@@ -181,11 +182,35 @@ where
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default, Hash)]
 pub struct Pt3<T> {
     pub x: T,
     pub y: T,
     pub z: T,
+}
+
+impl<T> Sum for Pt3<T>
+where
+    T: Default + AddAssign,
+{
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        let mut out = Pt3::default();
+        for n in iter {
+            out += n;
+        }
+        out
+    }
+}
+
+impl<T> AddAssign for Pt3<T>
+where
+    T: AddAssign,
+{
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+        self.z += rhs.z;
+    }
 }
 
 impl<T> From<Pt3<T>> for (T, T, T) {

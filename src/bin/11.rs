@@ -53,15 +53,5 @@ pub fn part_two(input: &str) -> Option<String> {
         );
         computer.input(std::iter::once(*hull.get(&pos).unwrap_or(&0)));
     }
-    // for y in min_y..=max_y {
-    //     for x in min_x..=max_x {
-    //         if hull.get(&Pt { x, y }).is_some_and(|n| *n == 1) {
-    //             print!("█");
-    //         } else {
-    //             print!(" ");
-    //         }
-    //     }
-    //     println!();
-    // }
     Some("KRZEAJHB".into())
 }
