@@ -5,7 +5,7 @@ use std::{
 };
 
 use anyhow::anyhow;
-use num_traits::{Euclid, Num};
+use num_traits::{Euclid, Num, NumAssign};
 
 use super::euclid::gcd;
 
@@ -21,6 +21,17 @@ pub enum Dir {
     S,
     E,
     W,
+}
+
+impl Dir {
+    pub fn turn(&mut self, turn: Turn) {
+        match (*self, turn) {
+            (Dir::N, Turn::L) | (Dir::S, Turn::R) => *self = Dir::W,
+            (Dir::N, Turn::R) | (Dir::S, Turn::L) => *self = Dir::E,
+            (Dir::E, Turn::L) | (Dir::W, Turn::R) => *self = Dir::N,
+            (Dir::E, Turn::R) | (Dir::W, Turn::L) => *self = Dir::S,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -54,6 +65,12 @@ impl FromStr for Dir2 {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Turn {
+    L,
+    R,
+}
+
 impl<T> Add<Pt<T>> for Pt<T>
 where
     T: Add<Output = T>,
@@ -64,6 +81,21 @@ where
         Pt {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
+        }
+    }
+}
+
+#[allow(clippy::suspicious_op_assign_impl)]
+impl<T> AddAssign<Dir> for Pt<T>
+where
+    T: Num + NumAssign,
+{
+    fn add_assign(&mut self, rhs: Dir) {
+        match rhs {
+            Dir::N => self.y -= T::one(),
+            Dir::S => self.y += T::one(),
+            Dir::E => self.x += T::one(),
+            Dir::W => self.x -= T::one(),
         }
     }
 }
