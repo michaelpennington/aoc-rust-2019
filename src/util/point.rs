@@ -26,12 +26,28 @@ pub enum Dir {
 
 impl Dir {
     pub fn turn(&mut self, turn: Turn) {
-        match (*self, turn) {
-            (Dir::N, Turn::L) | (Dir::S, Turn::R) => *self = Dir::W,
-            (Dir::N, Turn::R) | (Dir::S, Turn::L) => *self = Dir::E,
-            (Dir::E, Turn::L) | (Dir::W, Turn::R) => *self = Dir::N,
-            (Dir::E, Turn::R) | (Dir::W, Turn::L) => *self = Dir::S,
+        *self = *self + turn;
+    }
+}
+
+impl Add<Turn> for Dir {
+    type Output = Dir;
+
+    fn add(self, rhs: Turn) -> Self::Output {
+        match (self, rhs) {
+            (Dir::S, Turn::R) | (Dir::N, Turn::L) => Dir::W,
+            (Dir::N, Turn::R) | (Dir::S, Turn::L) => Dir::E,
+            (Dir::W, Turn::R) | (Dir::E, Turn::L) => Dir::N,
+            (Dir::W, Turn::L) | (Dir::E, Turn::R) => Dir::S,
         }
+    }
+}
+
+impl Add<Turn> for &Dir {
+    type Output = Dir;
+
+    fn add(self, rhs: Turn) -> Self::Output {
+        *self + rhs
     }
 }
 
@@ -66,10 +82,23 @@ impl FromStr for Dir2 {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter)]
 pub enum Turn {
     L,
     R,
+}
+
+impl Display for Turn {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Turn::L => 'L',
+                Turn::R => 'R',
+            }
+        )
+    }
 }
 
 impl<T> Add<Pt<T>> for Pt<T>
@@ -98,6 +127,24 @@ where
             Dir::E => self.x += T::one(),
             Dir::W => self.x -= T::one(),
         }
+    }
+}
+
+#[allow(clippy::suspicious_arithmetic_impl)]
+impl<T> Add<Dir> for Pt<T>
+where
+    T: Num,
+{
+    type Output = Pt<T>;
+
+    fn add(self, rhs: Dir) -> Self::Output {
+        let (x, y) = match rhs {
+            Dir::N => (self.x, self.y - T::one()),
+            Dir::S => (self.x, self.y + T::one()),
+            Dir::E => (self.x + T::one(), self.y),
+            Dir::W => (self.x - T::one(), self.y),
+        };
+        Pt { x, y }
     }
 }
 

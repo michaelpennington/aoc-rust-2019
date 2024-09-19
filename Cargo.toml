@@ -30,6 +30,7 @@ num-traits = "0.2.19"
 pico-args = "0.5.0"
 rand = "0.8.5"
 slab_tree = "0.3.2"
+strum = { version = "0.26.3", features = ["derive"] }
 tinyjson = "2.5.1"
 
 # Solution dependencies
