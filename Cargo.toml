@@ -21,6 +21,8 @@ test_lib = []
 
 [dependencies]
 anyhow = "1.0.87"
+arrayvec = "0.7.6"
+bitflags = "2.6.0"
 
 # Template dependencies
 chrono = { version = "0.4.31", optional = true }

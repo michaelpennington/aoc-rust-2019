@@ -6,7 +6,8 @@ use std::{
 };
 
 use anyhow::anyhow;
-use num_traits::{Euclid, Num, NumAssign};
+use num_traits::{CheckedAdd, CheckedSub, Euclid, Num, NumAssign};
+use strum::{EnumIter, IntoEnumIterator};
 
 use super::euclid::gcd;
 
@@ -16,7 +17,7 @@ pub struct Pt<T> {
     pub y: T,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIter)]
 pub enum Dir {
     N,
     S,
@@ -174,6 +175,29 @@ where
             x: self.x / gcd,
             y: self.y / gcd,
         }
+    }
+}
+
+impl<T> Pt<T> {
+    pub fn checked_add_dir(&self, dir: Dir) -> Option<Self>
+    where
+        T: CheckedAdd + CheckedSub + Num + Copy,
+    {
+        match dir {
+            Dir::N => self.y.checked_sub(&T::one()).map(|y| Self { x: self.x, y }),
+            Dir::S => self.y.checked_add(&T::one()).map(|y| Self { x: self.x, y }),
+            Dir::E => self.x.checked_add(&T::one()).map(|x| Self { x, y: self.y }),
+            Dir::W => self.x.checked_sub(&T::one()).map(|x| Self { x, y: self.y }),
+        }
+    }
+}
+
+impl<T> Pt<T> {
+    pub fn neighbors(self) -> impl Iterator<Item = Pt<T>>
+    where
+        T: CheckedAdd + CheckedSub + Num + Copy,
+    {
+        Dir::iter().filter_map(move |d| self.checked_add_dir(d))
     }
 }
 
