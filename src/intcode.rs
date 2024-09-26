@@ -15,6 +15,7 @@ pub struct Program<T> {
     extra_mem: HashMap<usize, T>,
     relative_base: isize,
     input: VecDeque<T>,
+    cache: Option<Vec<T>>,
 }
 
 impl<T> FromStr for Program<T>
@@ -35,6 +36,7 @@ where
             extra_mem: HashMap::new(),
             relative_base: 0,
             input: VecDeque::new(),
+            cache: None,
         })
     }
 }
@@ -60,6 +62,22 @@ impl<T> Program<T>
 where
     T: Num + Clone + Copy + ToPrimitive + PartialOrd + std::fmt::Debug,
 {
+    pub fn cache(&mut self) {
+        self.cache = Some(self.code.clone());
+    }
+
+    pub fn reset(&mut self) {
+        let cache = self
+            .cache
+            .as_ref()
+            .expect("Must have cached program to reset computer");
+        self.code.copy_from_slice(cache);
+        self.pc = 0;
+        self.extra_mem.clear();
+        self.input.clear();
+        self.relative_base = 0;
+    }
+
     pub fn input(&mut self, i: impl IntoIterator<Item = T>) {
         self.input.extend(i);
     }
