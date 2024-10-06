@@ -42,6 +42,48 @@ pub trait Graph {
         }
         None
     }
+
+    fn a_star(&self, from: Self::Node, to: Self::Node) -> Vec<Self::Node>
+    where
+        Self::Node: Copy + Hash + Eq,
+    {
+        let h = |from| Self::h(from, to);
+        let mut open_set = BinaryHeap::new();
+        open_set.push(MyNode {
+            inner: from,
+            score: h(from),
+        });
+        let mut g_score = HashMap::new();
+        g_score.insert(from, 0);
+        let mut came_from = HashMap::new();
+        while let Some(current) = open_set.pop() {
+            if current.inner == to {
+                let mut out = Vec::with_capacity(current.score);
+                let mut current = current.inner;
+                while let Some(from) = came_from.get(&current) {
+                    out.push(current);
+                    current = *from;
+                }
+                out.reverse();
+                return out;
+            }
+
+            let current = current.inner;
+            for (neighbor, distance) in self.neighbors(current) {
+                let tentative_g_score =
+                    g_score.get(&current).copied().unwrap_or(usize::MAX) + distance;
+                if tentative_g_score < g_score.get(&neighbor).copied().unwrap_or(usize::MAX) {
+                    came_from.insert(neighbor, current);
+                    g_score.insert(neighbor, tentative_g_score);
+                    open_set.push(MyNode {
+                        inner: neighbor,
+                        score: tentative_g_score + h(neighbor),
+                    });
+                }
+            }
+        }
+        Vec::new()
+    }
 }
 
 #[derive(Clone, Copy, Debug)]

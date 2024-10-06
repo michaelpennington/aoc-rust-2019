@@ -12,19 +12,14 @@ pub fn part_one(input: &str) -> Option<u32> {
             comp.input([x, y]);
             let res = comp.next().unwrap();
             if res == 1 {
-                print!("#");
                 num_pulled += 1;
-            } else {
-                print!(".");
             }
         }
-        println!();
     }
     Some(num_pulled)
 }
 
-fn square_fits(program: &mut Program<i32>, x: i32, y: i32) -> bool {
-    program.cache();
+fn square_fits(program: &mut Program<i64>, x: i64, y: i64) -> bool {
     [(0, 0), (99, 0), (0, 99), (100, 99)]
         .into_iter()
         .map(|(off_x, off_y)| {
@@ -36,8 +31,9 @@ fn square_fits(program: &mut Program<i32>, x: i32, y: i32) -> bool {
         .all(|b| b == 1)
 }
 
-pub fn part_two(input: &str) -> Option<i32> {
-    let mut comp = input.parse::<Program<i32>>().unwrap();
+pub fn part_two(input: &str) -> Option<i64> {
+    let mut comp = input.parse::<Program<i64>>().unwrap();
+    comp.cache();
     let mut max_x = 5000;
     let mut max_y = 10000;
     let mut min_x;

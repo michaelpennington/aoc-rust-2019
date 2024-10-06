@@ -83,13 +83,11 @@ where
     }
 
     pub fn get(&self, index: usize) -> T {
-        if let Some(val) = self.code.get(index) {
-            *val
-        } else if let Some(val) = self.extra_mem.get(&index) {
-            *val
-        } else {
-            T::zero()
-        }
+        *self
+            .code
+            .get(index)
+            .or_else(|| self.extra_mem.get(&index))
+            .unwrap_or(&T::zero())
     }
 
     pub fn set(&mut self, index: usize, val: T) {
@@ -131,7 +129,7 @@ where
             Opcode::Input => {
                 if let Some(inp) = self.input.pop_front() {
                     let addr = self.get_addr_with_pmode(self.pc, i.p_modes[0]);
-                    self.set(addr.to_usize().unwrap(), inp);
+                    self.set(addr, inp);
                     self.pc += 1;
                     Output::None
                 } else {
