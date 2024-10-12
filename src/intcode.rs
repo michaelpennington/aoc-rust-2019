@@ -16,6 +16,7 @@ pub struct Program<T> {
     relative_base: isize,
     input: VecDeque<T>,
     cache: Option<Vec<T>>,
+    default_input: Option<T>,
 }
 
 impl<T> FromStr for Program<T>
@@ -37,6 +38,7 @@ where
             relative_base: 0,
             input: VecDeque::new(),
             cache: None,
+            default_input: None,
         })
     }
 }
@@ -52,8 +54,35 @@ where
             match self.process_one() {
                 Output::Halted => break None,
                 Output::Val(v) => break Some(v),
-                Output::None => {}
+                _ => {}
             }
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct NonBlockProgram<T> {
+    pub program: Program<T>,
+}
+
+impl<T> From<Program<T>> for NonBlockProgram<T> {
+    fn from(value: Program<T>) -> Self {
+        Self { program: value }
+    }
+}
+
+impl<T> Iterator for NonBlockProgram<T>
+where
+    T: Num + Clone + Copy + ToPrimitive + PartialOrd + std::fmt::Debug,
+{
+    type Item = Result<T, bool>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.program.process_one() {
+            Output::Halted => None,
+            Output::Val(v) => Some(Ok(v)),
+            Output::None => Some(Err(false)),
+            Output::EmptyInput => Some(Err(true)),
         }
     }
 }
@@ -76,6 +105,15 @@ where
         self.extra_mem.clear();
         self.input.clear();
         self.relative_base = 0;
+        self.default_input = None;
+    }
+
+    pub fn set_default_input(&mut self, n: T) {
+        self.default_input = Some(n);
+    }
+
+    pub fn input_empty(&self) -> bool {
+        self.input.is_empty()
     }
 
     pub fn input(&mut self, i: impl IntoIterator<Item = T>) {
@@ -132,6 +170,11 @@ where
                     self.set(addr, inp);
                     self.pc += 1;
                     Output::None
+                } else if let Some(inp) = self.default_input {
+                    let addr = self.get_addr_with_pmode(self.pc, i.p_modes[0]);
+                    self.set(addr, inp);
+                    self.pc += 1;
+                    Output::EmptyInput
                 } else {
                     panic!("Needed input but none available!")
                 }
@@ -263,6 +306,7 @@ impl TryFrom<u32> for Instruction {
 enum Output<T> {
     Halted,
     Val(T),
+    EmptyInput,
     None,
 }
 
