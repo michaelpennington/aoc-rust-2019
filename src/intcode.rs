@@ -176,7 +176,8 @@ where
                     self.pc += 1;
                     Output::EmptyInput
                 } else {
-                    panic!("Needed input but none available!")
+                    self.pc -= 1;
+                    Output::EmptyInput
                 }
             }
             Opcode::Output => {
